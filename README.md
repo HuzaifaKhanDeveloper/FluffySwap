@@ -2,7 +2,7 @@
 
 A production-ready, kawaii-themed decentralized exchange (DEX) built for Ethereum Sepolia testnet. Swap ETH for FLUF tokens with adorable animations, secure smart contracts, and delightful user experience.
 
-![FluffySwap Preview](https://via.placeholder.com/800x400/FFD1DC/333333?text=FluffySwap+🌸)
+![FluffySwap Preview]([https://via.placeholder.com/800x400/FFD1DC/333333?text=FluffySwap+🌸](https://raw.githubusercontent.com/HuzaifaKhanDeveloper/FluffySwap/refs/heads/main/public/preview.png))
 
 ## ✨ Features
 
