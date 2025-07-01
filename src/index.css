@@ -1,3 +1,463 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* CRITICAL: Remove all universal selectors and excessive will-change properties */
+/* This prevents the massive performance hit during theme switches */
+
+/* ROOT VARIABLES for instant theme switching */
+:root {
+  --theme-transition: 0.15s ease;
+  --bg-primary: #fce7f3;
+  --bg-secondary: #f3e8ff;
+  --bg-accent: #e0f2fe;
+  --bg-light: #fdf2f8;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: rgba(255, 255, 255, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+:root.dark {
+  --bg-primary: #1f2937;
+  --bg-secondary: #581c87;
+  --bg-accent: #164e63;
+  --bg-light: #111827;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --border-color: rgba(255, 255, 255, 0.15);
+  --glass-bg: rgba(0, 0, 0, 0.15);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* INSTANT theme switching - NO LAG */
+html, body {
+  transition: none !important; /* Remove transitions that cause lag */
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  font-smooth: always;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ultra-fast background with CSS variables */
+body {
+  background: linear-gradient(-45deg, var(--bg-primary), var(--bg-secondary), var(--bg-accent), var(--bg-light));
+  background-size: 400% 400%;
+  background-attachment: fixed;
+  animation: gradient-shift 15s ease infinite;
+  color: var(--text-primary);
+  /* Remove problematic properties */
+  will-change: auto;
+  transform: none;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* SELECTIVE transitions - only on elements that need them */
+.theme-aware {
+  background-color: var(--glass-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  transition: var(--theme-transition);
+}
+
+/* Optimized scrollbar with instant theme response */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--glass-bg);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #ec4899, #8b5cf6);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: transform 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* HIGH-PERFORMANCE animations with GPU acceleration */
+@keyframes float-smooth {
+  0%, 100% { 
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  25% { 
+    transform: translate3d(0, -15px, 0) rotate(2deg) scale(1.02);
+  }
+  50% { 
+    transform: translate3d(0, -30px, 0) rotate(0deg) scale(1.05);
+  }
+  75% { 
+    transform: translate3d(0, -15px, 0) rotate(-2deg) scale(1.02);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+    transform: scale3d(1, 1, 1);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(236, 72, 153, 0.6);
+    transform: scale3d(1.02, 1.02, 1);
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes bounce-gentle {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -8px, 0) scale(1.01); }
+}
+
+@keyframes rotate-smooth {
+  from { transform: rotate3d(0, 0, 1, 0deg); }
+  to { transform: rotate3d(0, 0, 1, 360deg); }
+}
+
+@keyframes particle-dance {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate3d(15px, -25px, 0) rotate3d(0, 0, 1, 90deg) scale(1.1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate3d(-8px, -50px, 0) rotate3d(0, 0, 1, 180deg) scale(1.2);
+    opacity: 1;
+  }
+  75% {
+    transform: translate3d(-15px, -25px, 0) rotate3d(0, 0, 1, 270deg) scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* OPTIMIZED animation classes - minimal will-change usage */
+.animate-float {
+  animation: float-smooth 8s ease-in-out infinite;
+  transform: translate3d(0, 0, 0); /* Force layer creation */
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 2s infinite;
+  transform: translateX(-100%);
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 3s ease-in-out infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+.animate-rotate {
+  animation: rotate-smooth 12s linear infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+.animate-particle {
+  animation: particle-dance 10s ease-in-out infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+/* ULTRA-SMOOTH button with optimized hover */
+.btn-gradient {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4);
+  background-size: 300% 300%;
+  position: relative;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.btn-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-gradient:hover {
+  background-position: right center;
+  transform: translate3d(0, -3px, 0) scale(1.02);
+  box-shadow: 0 15px 35px rgba(236, 72, 153, 0.4);
+}
+
+.btn-gradient:hover::before {
+  left: 100%;
+}
+
+.btn-gradient:active {
+  transform: translate3d(0, -1px, 0) scale(1.01);
+  transition-duration: 0.1s;
+}
+
+/* OPTIMIZED glass morphism with theme variables */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-color);
+  transform: translate3d(0, 0, 0);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass:hover {
+  background: color-mix(in srgb, var(--glass-bg) 70%, white 30%);
+  backdrop-filter: blur(25px) saturate(200%);
+  transform: translate3d(0, -2px, 0);
+  box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+/* INSTANT focus with no lag */
+*:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.3);
+}
+
+/* OPTIMIZED loading spinner */
+.spinner {
+  border: 3px solid rgba(236, 72, 153, 0.1);
+  border-left: 3px solid #ec4899;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes spin {
+  to { transform: rotate3d(0, 0, 1, 360deg); }
+}
+
+/* SMOOTH gradient text with theme awareness */
+.gradient-text {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4, #f59e0b);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-text-shift 6s ease infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+.gradient-text:hover {
+  animation-duration: 2s;
+  transform: translate3d(0, 0, 0) scale(1.02);
+}
+
+@keyframes gradient-text-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* OPTIMIZED card hover with 3D transform */
+.card-hover {
+  transform: translate3d(0, 0, 0);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-style: preserve-3d;
+}
+
+.card-hover:hover {
+  transform: translate3d(0, -6px, 0) scale(1.02) rotateX(5deg);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 10px 20px rgba(236, 72, 153, 0.1);
+}
+
+/* PERFORMANCE-OPTIMIZED particles */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  animation: particle-dance 8s ease-in-out infinite;
+}
+
+/* INSTANT theme switching helpers */
+.instant-theme {
+  /* Use CSS custom properties for instant updates */
+  background-color: var(--glass-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* SMOOTH page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0) scale(0.98);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translate3d(0, -20px, 0) scale(0.98);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* OPTIMIZED input focus */
+input, textarea, select {
+  transform: translate3d(0, 0, 0);
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+input:focus, textarea:focus, select:focus {
+  transform: translate3d(0, 0, 0) scale(1.01);
+  box-shadow: 
+    0 0 0 3px rgba(236, 72, 153, 0.2),
+    0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* SMOOTH button press */
+button {
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+button:active {
+  transform: translate3d(0, 0, 0) scale(0.98);
+}
+
+/* OPTIMIZED selection */
+::selection {
+  background: rgba(236, 72, 153, 0.3);
+}
+
+/* SMOOTH link hover */
+a {
+  transform: translate3d(0, 0, 0);
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+a:hover {
+  transform: translate3d(0, -1px, 0);
+}
+
+/* OPTIMIZED image hover */
+img {
+  transform: translate3d(0, 0, 0);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+img:hover {
+  transform: translate3d(0, 0, 0) scale(1.02);
+}
+
+/* SMOOTH progress bar */
+.progress-bar {
+  background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4);
+  background-size: 200% 100%;
+  animation: progress-flow 2s ease infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes progress-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* OPTIMIZED skeleton with theme support */
+.skeleton {
+  background: linear-gradient(90deg, 
+    var(--glass-bg), 
+    color-mix(in srgb, var(--glass-bg) 50%, white 50%), 
+    var(--glass-bg)
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* RESPONSIVE optimizations */
+@media (max-width: 640px) {
+  .animate-float { animation-duration: 6s; }
+  .card-hover:hover { transform: translate3d(0, -3px, 0) scale(1.01); }
+  .btn-gradient:hover { transform: translate3d(0, -2px, 0) scale(1.01); }
+}
+
+/* REDUCED MOTION support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.15s !important;
+  }
+  
+  .animate-float,
+  .animate-pulse-glow,
+  .animate-shimmer,
+  .animate-bounce-gentle,
+  .animate-rotate,
+  .animate-particle {
+    animation: none !important;
+  }
+}
+
+/* HIGH CONTRAST support */
+@media (prefers-contrast: high) {
+  * {
+    border-color: currentColor !important;
+  }
+}
+
+/* PRINT optimizations */
+@media print {
+  * {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+  }
+}
