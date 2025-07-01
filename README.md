@@ -38,14 +38,12 @@ A production-ready, kawaii-themed decentralized exchange (DEX) built for Ethereu
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/fluffyswap.git
+git clone https://github.com/HuzaifaKhanDeveloper/fluffyswap.git
 cd fluffyswap
 
 # Install dependencies
 npm install
 
-# Copy environment variables
-cp .env.example .env
 ```
 
 ### Environment Setup
@@ -252,6 +250,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <p>
     <a href="https://fluffyswap.dev">Website</a> •
     <a href="https://docs.fluffyswap.dev">Documentation</a> •
-    <a href="https://github.com/your-username/fluffyswap/issues">Report Bug</a>
+    <a href="https://github.com/HuzaifaKhanDeveloper/fluffyswap/issues">Report Bug</a>
   </p>
 </div>
