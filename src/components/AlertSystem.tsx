@@ -7,7 +7,8 @@ import {
   Info, 
   X,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Wallet
 } from 'lucide-react';
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info' | 'loading';
@@ -68,7 +69,7 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({
     const alert: Alert = {
       ...alertData,
       id,
-      duration: alertData.duration ?? (alertData.type === 'loading' ? undefined : 5000),
+      duration: alertData.duration ?? (alertData.type === 'loading' ? undefined : 6000),
     };
 
     setAlerts(prev => {
@@ -339,8 +340,8 @@ export const useSwapAlerts = () => {
 
   const showTransactionSuccess = (txHash: string) => {
     return alerts.showSuccess(
-      'Swap Completed!',
-      'Your tokens have been successfully swapped! 🎉',
+      'Swap Completed! 🎉',
+      'Your tokens have been successfully swapped!',
       {
         link: {
           label: 'View Transaction',
@@ -356,7 +357,7 @@ export const useSwapAlerts = () => {
       error || 'Unable to complete the swap. Please try again.',
       {
         action: {
-          label: 'Retry',
+          label: 'Try Again',
           onClick: () => window.location.reload(),
         },
       }
@@ -372,7 +373,10 @@ export const useSwapAlerts = () => {
           label: 'Connect Wallet',
           onClick: () => {
             // This would trigger wallet connection
-            console.log('Connect wallet clicked');
+            const connectButton = document.querySelector('[data-testid="rk-connect-button"]') as HTMLButtonElement;
+            if (connectButton) {
+              connectButton.click();
+            }
           },
         },
       }
@@ -396,6 +400,31 @@ export const useSwapAlerts = () => {
     return alerts.showWarning(
       'Insufficient Liquidity',
       'The pool doesn\'t have enough tokens for this swap amount.',
+      {
+        action: {
+          label: 'Try Smaller Amount',
+          onClick: () => {
+            // This could trigger a function to suggest a smaller amount
+            console.log('Suggest smaller amount');
+          },
+        },
+      }
+    );
+  };
+
+  const showUserRejection = () => {
+    return alerts.showInfo(
+      'Transaction Cancelled',
+      'You cancelled the transaction in your wallet. No worries, try again when you\'re ready! 😊',
+      {
+        action: {
+          label: 'Try Again',
+          onClick: () => {
+            // This could trigger the swap again
+            console.log('Retry swap');
+          },
+        },
+      }
     );
   };
 
@@ -407,5 +436,6 @@ export const useSwapAlerts = () => {
     showWalletError,
     showInsufficientBalance,
     showInsufficientLiquidity,
+    showUserRejection,
   };
 };

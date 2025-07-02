@@ -4,8 +4,9 @@ import { useAccount, useBalance, useContractRead, useContractWrite, useWaitForTr
 import { parseEther, formatEther } from 'viem';
 import { ArrowDownUp, Loader2, AlertTriangle, CheckCircle, Sparkles } from 'lucide-react';
 import { TokenIcon } from './TokenIcon';
+import { useSwapAlerts } from './AlertSystem';
+import { useErrorHandler } from '../utils/errorHandler';
 import { CONTRACTS, FLUFFY_SWAP_ABI, MY_TOKEN_ABI, SWAP_LIMITS } from '../config/contracts';
-import toast from 'react-hot-toast';
 
 interface SwapInterfaceProps {
   className?: string;
@@ -16,8 +17,19 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({ className = '' }) 
   const [flufAmount, setFlufAmount] = useState('');
   const [isCalculating, setIsCalculating] = useState(false);
   const [inputError, setInputError] = useState<string>('');
+  const [pendingTxId, setPendingTxId] = useState<string | null>(null);
 
   const { address, isConnected } = useAccount();
+  const { handleError } = useErrorHandler();
+  const {
+    showTransactionPending,
+    showTransactionSuccess,
+    showTransactionError,
+    showWalletError,
+    showInsufficientBalance,
+    showInsufficientLiquidity,
+    removeAlert,
+  } = useSwapAlerts();
 
   // Get ETH balance
   const { data: ethBalance } = useBalance({
@@ -76,10 +88,38 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({ className = '' }) 
     data: swapData,
     isLoading: isSwapLoading,
     error: swapError,
+    reset: resetSwap,
   } = useContractWrite({
     address: CONTRACTS.FluffySwap,
     abi: FLUFFY_SWAP_ABI,
     functionName: 'swapEthForTokens',
+    onError: (error) => {
+      console.error('Swap write error:', error);
+      const parsedError = handleError(error, 'Swap Transaction');
+      
+      // Remove pending alert if exists
+      if (pendingTxId) {
+        removeAlert(pendingTxId);
+        setPendingTxId(null);
+      }
+
+      // Show appropriate error alert
+      if (parsedError.type === 'USER_REJECTED') {
+        showTransactionError('You cancelled the transaction in your wallet. Try again when you\'re ready to proceed.');
+      } else if (parsedError.type === 'INSUFFICIENT_FUNDS') {
+        showInsufficientBalance();
+      } else if (parsedError.type === 'INSUFFICIENT_LIQUIDITY') {
+        showInsufficientLiquidity();
+      } else {
+        showTransactionError(parsedError.message);
+      }
+    },
+    onSuccess: (data) => {
+      console.log('Swap transaction submitted:', data);
+      // Show pending alert
+      const alertId = showTransactionPending(data.hash);
+      setPendingTxId(alertId);
+    },
   });
 
   // Wait for transaction
@@ -88,13 +128,35 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({ className = '' }) 
     isSuccess: isTransactionSuccess 
   } = useWaitForTransaction({
     hash: swapData?.hash,
-    onSuccess: () => {
-      toast.success('Swap completed successfully! 🎉');
+    onSuccess: (data) => {
+      console.log('Transaction confirmed:', data);
+      
+      // Remove pending alert
+      if (pendingTxId) {
+        removeAlert(pendingTxId);
+        setPendingTxId(null);
+      }
+
+      // Show success alert
+      showTransactionSuccess(data.transactionHash);
+      
+      // Reset form
       setEthAmount('');
       setFlufAmount('');
+      resetSwap();
     },
     onError: (error) => {
-      toast.error(`Transaction failed: ${error.message}`);
+      console.error('Transaction failed:', error);
+      
+      // Remove pending alert
+      if (pendingTxId) {
+        removeAlert(pendingTxId);
+        setPendingTxId(null);
+      }
+
+      const parsedError = handleError(error, 'Transaction Confirmation');
+      showTransactionError(parsedError.message);
+      resetSwap();
     },
   });
 
@@ -164,15 +226,23 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({ className = '' }) 
   }, [ethAmount, flufAmount, ethBalance, contractLiquidity]);
 
   const handleSwap = () => {
-    if (!isConnected || !ethAmount || inputError) return;
+    if (!isConnected) {
+      showWalletError();
+      return;
+    }
+
+    if (!ethAmount || inputError) {
+      return;
+    }
 
     try {
       executeSwap({
         value: parseEther(ethAmount),
       });
     } catch (error) {
-      console.error('Swap error:', error);
-      toast.error('Failed to initiate swap');
+      console.error('Swap execution error:', error);
+      const parsedError = handleError(error, 'Swap Execution');
+      showTransactionError(parsedError.message);
     }
   };
 

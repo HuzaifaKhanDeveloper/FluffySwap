@@ -26,6 +26,71 @@ export class ErrorHandler {
   static parse(error: unknown): ParsedError {
     console.error('Error occurred:', error);
 
+    // Handle string errors that contain user rejection messages
+    if (typeof error === 'string') {
+      const errorLower = error.toLowerCase();
+      if (errorLower.includes('user rejected') || 
+          errorLower.includes('user denied') || 
+          errorLower.includes('user cancelled') ||
+          errorLower.includes('transaction signature')) {
+        return {
+          type: ErrorType.USER_REJECTED,
+          title: 'Transaction Cancelled',
+          message: 'You cancelled the transaction in your wallet.',
+          suggestion: 'Try again when you\'re ready to proceed.',
+        };
+      }
+    }
+
+    // Handle error objects with message property
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorMessage = (error as any).message?.toLowerCase() || '';
+      
+      if (errorMessage.includes('user rejected') || 
+          errorMessage.includes('user denied') || 
+          errorMessage.includes('user cancelled') ||
+          errorMessage.includes('transaction signature') ||
+          errorMessage.includes('metamask tx signature')) {
+        return {
+          type: ErrorType.USER_REJECTED,
+          title: 'Transaction Cancelled',
+          message: 'You cancelled the transaction in your wallet.',
+          suggestion: 'Try again when you\'re ready to proceed.',
+        };
+      }
+    }
+
+    // Handle error objects with details property (like your error)
+    if (error && typeof error === 'object' && 'details' in error) {
+      const details = (error as any).details?.toLowerCase() || '';
+      
+      if (details.includes('user denied') || 
+          details.includes('user rejected') ||
+          details.includes('transaction signature')) {
+        return {
+          type: ErrorType.USER_REJECTED,
+          title: 'Transaction Cancelled',
+          message: 'You cancelled the transaction in your wallet.',
+          suggestion: 'Try again when you\'re ready to proceed.',
+        };
+      }
+    }
+
+    // Handle shortMessage property
+    if (error && typeof error === 'object' && 'shortMessage' in error) {
+      const shortMessage = (error as any).shortMessage?.toLowerCase() || '';
+      
+      if (shortMessage.includes('user rejected') || 
+          shortMessage.includes('user denied')) {
+        return {
+          type: ErrorType.USER_REJECTED,
+          title: 'Transaction Cancelled',
+          message: 'You cancelled the transaction in your wallet.',
+          suggestion: 'Try again when you\'re ready to proceed.',
+        };
+      }
+    }
+
     // User rejected transaction
     if (error instanceof UserRejectedRequestError) {
       return {
@@ -82,6 +147,17 @@ export class ErrorHandler {
     if (error instanceof BaseError) {
       const errorMessage = error.shortMessage || error.message;
 
+      // Check for user rejection in base error
+      if (errorMessage.toLowerCase().includes('user rejected') || 
+          errorMessage.toLowerCase().includes('user denied')) {
+        return {
+          type: ErrorType.USER_REJECTED,
+          title: 'Transaction Cancelled',
+          message: 'You cancelled the transaction in your wallet.',
+          suggestion: 'Try again when you\'re ready to proceed.',
+        };
+      }
+
       // Insufficient funds
       if (errorMessage.includes('insufficient funds') || errorMessage.includes('exceeds balance')) {
         return {
@@ -118,7 +194,10 @@ export class ErrorHandler {
     if (error instanceof Error) {
       const errorMessage = error.message.toLowerCase();
 
-      if (errorMessage.includes('user rejected') || errorMessage.includes('user denied')) {
+      if (errorMessage.includes('user rejected') || 
+          errorMessage.includes('user denied') ||
+          errorMessage.includes('user cancelled') ||
+          errorMessage.includes('transaction signature')) {
         return {
           type: ErrorType.USER_REJECTED,
           title: 'Transaction Cancelled',
